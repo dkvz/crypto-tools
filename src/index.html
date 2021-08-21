@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tailwind + Webpack test</title>
+</head>
+
+<body class="bg-gray-800">
+  <main
+    class="border-4 border-indigo-100 my-4 p-4 lg:p-8 container mx-auto bg-gray-900 text-gray-300 rounded shadow-md">
+    <h1 class="text-4xl font-bold text-center text-gray-100 border-b-4 border-indigo-300 pb-4 mb-4">Some Crypto
+      Utilities
+    </h1>
+    <div class="mb-6">
+      <strong>Note</strong>: the current page only contains client-side JavaScript, it should NOT send anything over the
+      network.
+    </div>
+    <section class="mx-auto lg:max-w-3xl">
+      <form action="#" method="POST">
+        <div class="grid grid-cols-2 gap-4 lg:gap-8">
+          <label tabindex="1" class="btn toggle-btn">
+            <input type="radio" id="encryptRadio" name="encryptRadios">
+            <span>Encrypt</span>
+          </label>
+          <label tabindex="2" class="btn toggle-btn">
+            <input type="radio" id="decryptRadio" name="encryptRadios">
+            <span>Decrypt</span>
+          </label>
+        </div>
+      </form>
+    </section>
+  </main>
+</body>
+
+</html>
