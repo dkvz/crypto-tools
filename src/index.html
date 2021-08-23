@@ -9,6 +9,10 @@
 </head>
 
 <body class="bg-gray-800">
+  <div id="loadingModal"
+    class="modal fixed flex p-6 bg-gray-900 text-gray-300 rounded shadow-md border-2 border-gray-700 hidden">
+    <div class="lds-dual-ring"></div>
+  </div>
   <main class="border-2 border-gray-700 my-4 p-4 lg:p-8 container mx-auto bg-gray-900 text-gray-300 rounded shadow-md">
     <h1 class="text-4xl font-bold text-center text-gray-100 border-b-4 border-indigo-300 pb-4 mb-4">Some Crypto
       Utilities
@@ -18,7 +22,7 @@
       network.
     </div>
     <section class="mx-auto lg:max-w-3xl">
-      <form action="#" method="POST">
+      <form id="cryptForm" action="#" method="POST">
         <div class="grid grid-cols-2 gap-4 lg:gap-8">
           <label tabindex="1" class="btn toggle-btn">
             <input checked="checked" type="radio" id="encryptRadio" name="encryptRadios">
@@ -30,12 +34,12 @@
           </label>
         </div>
         <div class="my-6">
-          <input class="w-full" type="password" id="passwordInput" placeholder="Enter the passphrase...">
+          <input class="w-full" required type="password" id="passwordInput" placeholder="Enter the passphrase...">
         </div>
         <div class="my-6 text-area" contenteditable="true"></div>
         <div class="my-6 flex justify-end">
-          <button class="btn mr-4">Clear</button>
-          <button class="btn">Run</button>
+          <button class="btn mr-4" id="clearBtn" type="button">Clear</button>
+          <button class="btn" id="runBtn" type="submit">Run</button>
         </div>
       </form>
     </section>
