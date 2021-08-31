@@ -24,7 +24,7 @@ export async function deriveKey(passphrase) {
     ["deriveKey", "deriveBits"] //can be any combination of "deriveKey" and "deriveBits"
   )
 
-  const salt = window.crypto.getRandomValues(new Uint8Array(saltLength))
+  const salt = crypto.getRandomValues(new Uint8Array(saltLength))
 
   const byteBuffer = await crypto.subtle.deriveBits(
     {
@@ -55,7 +55,7 @@ export async function encrypt(text, key, salt) {
 
   // Generate an IV. We'll put it right before the encrypted 
   // message.
-  const iv = window.crypto.getRandomValues(new Uint8Array(ivLength))
+  const iv = crypto.getRandomValues(new Uint8Array(ivLength))
 
   const ciphertext = await crypto.subtle.encrypt(
     {
@@ -73,4 +73,10 @@ export async function encrypt(text, key, salt) {
   fullBytes.set(encryptedBytes, salt.length + iv.length);
 
   return fullBytes
+}
+
+export async function decrypt(ciphertext, passphrase) {
+  // Extract the salt from the ciphertext, then
+  // derive the key.
+
 }
