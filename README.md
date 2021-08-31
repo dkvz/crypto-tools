@@ -6,3 +6,4 @@ Client-side JavaScript crypto tools, mostly something to encode text in AES.
 
 # TODO
 - [ ] Add a webroot folder with a favicon.
+- [ ] Try encrypting 16 bytes unicode characters and see if decryption works. I'm doubting my base64 decode.
