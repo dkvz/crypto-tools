@@ -10,7 +10,7 @@ const pbkdf2Iterations = 10000
  * Creates both the actual derived key and a salt.
  * @param {string} passphrase 
  * @param {Uint8Array} salt - Optional, will be generated randomly if not present
- * @returns Object with "key" (ArrayBuffer) and "salt" (Uint8Array)
+ * @returns Object with "key" (CryptoKey) and "salt" (Uint8Array)
  */
 export async function deriveKey(passphrase, salt) {
   // Need to convert the string to byte array.
@@ -29,19 +29,21 @@ export async function deriveKey(passphrase, salt) {
     salt = crypto.getRandomValues(new Uint8Array(saltLength))
   }
 
-  const byteBuffer = await crypto.subtle.deriveBits(
+  const cryptoKey = await crypto.subtle.deriveKey(
     {
       "name": "PBKDF2",
       salt: salt,
       iterations: pbkdf2Iterations,
-      hash: { name: "SHA-512" }, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
+      hash: { name: "SHA-512" },
     },
-    key, //your key from generateKey or importKey
-    256 //the number of bits you want to derive
+    key,
+    { "name": "AES-GCM", "length": 256 },
+    true,
+    ["encrypt", "decrypt"]
   )
 
   return {
-    key: byteBuffer,
+    key: cryptoKey,
     salt
   }
 }
@@ -67,12 +69,13 @@ export async function encrypt(text, passphrase) {
     key,
     enc.encode(text)
   )
+  const cipherBytes = new Uint8Array(ciphertext)
 
   // Append salt and IV.
-  const fullBytes = new Uint8Array(ciphertext.length + salt.length + iv / length)
+  const fullBytes = new Uint8Array(cipherBytes.length + salt.length + iv.length)
   fullBytes.set(salt);
   fullBytes.set(iv, salt.length);
-  fullBytes.set(encryptedBytes, salt.length + iv.length);
+  fullBytes.set(cipherBytes, salt.length + iv.length);
 
   return Uint8ArrayToBase64(fullBytes)
 }
@@ -106,62 +109,25 @@ export async function decrypt(ciphertextB64, passphrase) {
 }
 
 /**
- * Adapted from here: https://gist.github.com/jonleighton/958841
- * Which is why the style is very different.
- * Apparently btoa is weird on the browser.
- * atob should be fine.
- * @param {Uint8Array} bytes 
+ * @param {Uint8Array} aBytes 
  * @returns {string}
  */
-function Uint8ArrayToBase64(bytes) {
-  let base64 = ''
-  let encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+function Uint8ArrayToBase64(aBytes) {
 
-  const byteLength = bytes.byteLength
-  const byteRemainder = byteLength % 3
-  const mainLength = byteLength - byteRemainder
+  var nMod3 = 2, sB64Enc = ""
 
-  let a, b, c, d
-  let chunk
-
-  // Main loop deals with bytes in chunks of 3
-  for (let i = 0; i < mainLength; i = i + 3) {
-    // Combine the three bytes into a single integer
-    chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2]
-
-    // Use bitmasks to extract 6-bit segments from the triplet
-    a = (chunk & 16515072) >> 18 // 16515072 = (2^6 - 1) << 18
-    b = (chunk & 258048) >> 12 // 258048   = (2^6 - 1) << 12
-    c = (chunk & 4032) >> 6 // 4032     = (2^6 - 1) << 6
-    d = chunk & 63               // 63       = 2^6 - 1
-
-    // Convert the raw binary segments to the appropriate ASCII encoding
-    base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d]
+  for (var nLen = aBytes.length, nUint24 = 0, nIdx = 0; nIdx < nLen; nIdx++) {
+    nMod3 = nIdx % 3
+    if (nIdx > 0 && (nIdx * 4 / 3) % 76 === 0) { sB64Enc += "\r\n" }
+    nUint24 |= aBytes[nIdx] << (16 >>> nMod3 & 24)
+    if (nMod3 === 2 || aBytes.length - nIdx === 1) {
+      sB64Enc += String.fromCharCode(uint6ToB64(nUint24 >>> 18 & 63), uint6ToB64(nUint24 >>> 12 & 63), uint6ToB64(nUint24 >>> 6 & 63), uint6ToB64(nUint24 & 63));
+      nUint24 = 0
+    }
   }
 
-  // Deal with the remaining bytes and padding
-  if (byteRemainder == 1) {
-    chunk = bytes[mainLength]
+  return sB64Enc.substr(0, sB64Enc.length - 2 + nMod3) + (nMod3 === 2 ? '' : nMod3 === 1 ? '=' : '==')
 
-    a = (chunk & 252) >> 2 // 252 = (2^6 - 1) << 2
-
-    // Set the 4 least significant bits to zero
-    b = (chunk & 3) << 4 // 3   = 2^2 - 1
-
-    base64 += encodings[a] + encodings[b] + '=='
-  } else if (byteRemainder == 2) {
-    chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1]
-
-    a = (chunk & 64512) >> 10 // 64512 = (2^6 - 1) << 10
-    b = (chunk & 1008) >> 4 // 1008  = (2^6 - 1) << 4
-
-    // Set the 2 least significant bits to zero
-    c = (chunk & 15) << 2 // 15    = 2^4 - 1
-
-    base64 += encodings[a] + encodings[b] + encodings[c] + '='
-  }
-
-  return base64
 }
 
 /**
@@ -187,6 +153,38 @@ function base64DecToArr(sBase64, nBlocksSize) {
   }
 
   return taBytes;
+}
+
+function b64ToUint6(nChr) {
+
+  return nChr > 64 && nChr < 91 ?
+    nChr - 65
+    : nChr > 96 && nChr < 123 ?
+      nChr - 71
+      : nChr > 47 && nChr < 58 ?
+        nChr + 4
+        : nChr === 43 ?
+          62
+          : nChr === 47 ?
+            63
+            :
+            0
+}
+
+function uint6ToB64(nUint6) {
+
+  return nUint6 < 26 ?
+    nUint6 + 65
+    : nUint6 < 52 ?
+      nUint6 + 71
+      : nUint6 < 62 ?
+        nUint6 - 4
+        : nUint6 === 62 ?
+          43
+          : nUint6 === 63 ?
+            47
+            :
+            65
 }
 
 /**

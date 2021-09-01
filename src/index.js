@@ -71,11 +71,11 @@ cryptForm.addEventListener('submit', async (e) => {
         passwordInput.value
       )
     }
-    passwordInput.value = ''
+    //passwordInput.value = ''
 
   } catch (ex) {
     console.log(ex)
-    showMsg(ex.message)
+    showMsg(`Error: ${ex.message}`)
   } finally {
     displayLoading(false)
   }
