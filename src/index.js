@@ -1,5 +1,7 @@
 require('./styles/styles.pcss')
 
+import * as Crypto from './crypto'
+
 const warnClass = 'text-yellow-500'
 
 const [
@@ -47,7 +49,7 @@ function clearMsg() {
   msg.classList.remove(warnClass)
 }
 
-cryptForm.addEventListener('submit', (e) => {
+cryptForm.addEventListener('submit', async (e) => {
   e.preventDefault()
   displayLoading(true)
   clearMsg()
@@ -58,9 +60,21 @@ cryptForm.addEventListener('submit', (e) => {
     if (!passwordInput.value)
       throw new Error('Please enter a passphrase')
 
-
+    if (encryptRadio.checked) {
+      payloadText.innerText = await Crypto.encrypt(
+        payloadText.innerText,
+        passwordInput.value
+      )
+    } else {
+      payloadText.innerText = await Crypto.decrypt(
+        payloadText.innerText,
+        passwordInput.value
+      )
+    }
+    passwordInput.value = ''
 
   } catch (ex) {
+    console.log(ex)
     showMsg(ex.message)
   } finally {
     displayLoading(false)
