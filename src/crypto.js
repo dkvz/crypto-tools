@@ -9,22 +9,25 @@ const pbkdf2Iterations = 10000
 /**
  * Creates both the actual derived key and a salt.
  * @param {string} passphrase 
+ * @param {Uint8Array} salt - Optional, will be generated randomly if not present
  * @returns Object with "key" (ArrayBuffer) and "salt" (Uint8Array)
  */
-export async function deriveKey(passphrase) {
+export async function deriveKey(passphrase, salt) {
   // Need to convert the string to byte array.
   // When you're a normal person you use TextEncoder.
   const enc = new TextEncoder()
 
   const key = await crypto.subtle.importKey(
     "raw", //only "raw" is allowed
-    enc.encode(key), //your password
+    enc.encode(passphrase), //your password
     { name: "PBKDF2" },
     false, //whether the key is extractable (i.e. can be used in exportKey)
     ["deriveKey", "deriveBits"] //can be any combination of "deriveKey" and "deriveBits"
   )
 
-  const salt = crypto.getRandomValues(new Uint8Array(saltLength))
+  if (!salt) {
+    salt = crypto.getRandomValues(new Uint8Array(saltLength))
+  }
 
   const byteBuffer = await crypto.subtle.deriveBits(
     {
@@ -80,7 +83,26 @@ export async function decrypt(ciphertextB64, passphrase) {
 
   // Extract the salt from the ciphertext, then
   // derive the key.
+  if (ciphertext.length <= saltLength + ivLength) {
+    throw new Error('Invalid cipher text')
+  }
+  const salt = ciphertext.slice(0, saltLength)
+  const { key } = await deriveKey(passphrase, salt)
 
+  // Extract the IV:
+  const iv = ciphertext.slice(saltLength, saltLength + ivLength)
+
+  const decrypted = await crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv: iv
+    },
+    key,
+    ciphertext
+  )
+
+  const dec = new TextDecoder();
+  return dec.decode(decrypted)
 }
 
 /**

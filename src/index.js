@@ -51,5 +51,18 @@ cryptForm.addEventListener('submit', (e) => {
   e.preventDefault()
   displayLoading(true)
   clearMsg()
+  try {
+    if (payloadText.innerText.length <= 0)
+      throw new Error('There is no text to process')
 
+    if (!passwordInput.value)
+      throw new Error('Please enter a passphrase')
+
+
+
+  } catch (ex) {
+    showMsg(ex.message)
+  } finally {
+    displayLoading(false)
+  }
 })
