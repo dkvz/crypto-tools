@@ -101,7 +101,7 @@ export async function decrypt(ciphertextB64, passphrase) {
       iv: iv
     },
     key,
-    ciphertext
+    ciphertext.slice(saltLength + ivLength)
   )
 
   const dec = new TextDecoder();
