@@ -1,4 +1,6 @@
 require('./styles/styles.pcss')
+// Make sure the favicon is part of the bundle:
+require('../assets/favicon.ico')
 
 import * as Crypto from './crypto'
 

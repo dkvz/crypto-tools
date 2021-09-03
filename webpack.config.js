@@ -23,7 +23,19 @@ const config = {
           MiniCssExtractPlugin.loader,
           'css-loader', 'postcss-loader',
         ],
-      }
+      },
+      // Only used to put favicon in the root.
+      {
+        test: /\.(ico)$/i,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+            },
+          },
+        ],
+      },
     ]
   },
   plugins: [
@@ -38,7 +50,7 @@ module.exports = (env, argv) => {
   // or development. We could do it with the 
   // CLI in package.json but then that doesn't
   // play well with Windows.
-  process.env.NODE_ENV = argv.mode === 'production' ? 
+  process.env.NODE_ENV = argv.mode === 'production' ?
     'production' : 'development'
 
   config.plugins.push(new HtmlWebpackPlugin({
