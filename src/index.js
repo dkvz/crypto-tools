@@ -73,7 +73,7 @@ cryptForm.addEventListener('submit', async (e) => {
         passwordInput.value
       )
     }
-    //passwordInput.value = ''
+    passwordInput.value = ''
 
   } catch (ex) {
     console.log(ex)
@@ -81,4 +81,10 @@ cryptForm.addEventListener('submit', async (e) => {
   } finally {
     displayLoading(false)
   }
+})
+
+clearBtn.addEventListener('click', () => {
+  clearMsg()
+  passwordInput.value = ''
+  payloadText.innerText = ''
 })
