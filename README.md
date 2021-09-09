@@ -1,5 +1,5 @@
 # Crypto-Tools
-Currently deployed here (but anybody cold deploy it, I'm not going to sue (I think)): https://tools.dkvz.eu/crypto
+Currently deployed here (but anybody could deploy it, I'm not going to sue (I think)): https://tools.dkvz.eu/crypto
 
 Client-side JavaScript crypto tools, mostly something to encode text in AES.
 
