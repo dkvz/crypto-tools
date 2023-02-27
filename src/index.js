@@ -100,7 +100,19 @@ cryptForm.addEventListener('submit', async (e) => {
 })
 
 certForm.addEventListener('submit', async (e) => {
+  e.preventDefault()
+  clearMsg(msgCert)
+  // Will probably change this in the future:
+  const certInfo = document.querySelector('#certInfo')
+  let encoded = certText.innerText
+  // Remove first line if it contains "BEGIN" ans last line 
+  // if it contains "END":
+  encoded = encoded.replace(/-+BEGIN\s\w+-*/, '')
+    .replace(/-+END\s\w+-*/, '')
+    .replace(/\s/g, '')
+  // We need to convert the text into an ArrayBuffer:
   
+  //certInfo.textContent = window.atob(encoded)
 })
 
 clearBtn.addEventListener('click', () => {
