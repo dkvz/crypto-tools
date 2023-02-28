@@ -205,3 +205,25 @@ function base64ToUint8Array(base64) {
  return bytes;
 }
 */
+
+export async function decodeCertificate(encoded) {
+  // Remove first line if it contains "BEGIN" ans last line 
+  // if it contains "END":
+  encoded = encoded.replace(/-+BEGIN\s\w+-*/, '')
+    .replace(/-+END\s\w+-*/, '')
+    .replace(/\s/g, '')
+  // Convert base64 to ArrayBuffer:
+  const bytes = base64DecToArr(encoded)
+  // Try to import the key:
+  const signAlgorithm = {
+    name: "RSA-PSS",
+    hash: "SHA-256",
+  }
+  try {
+    const certInfo = await crypto.subtle.
+      importKey("spki", bytes, signAlgorithm, true, ["sign"])
+    return certInfo
+  } catch (ex) {
+    throw new Error("Key import failed: " + ex.message)
+  }
+}

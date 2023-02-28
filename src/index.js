@@ -104,13 +104,12 @@ certForm.addEventListener('submit', async (e) => {
   clearMsg(msgCert)
   // Will probably change this in the future:
   const certInfo = document.querySelector('#certInfo')
-  let encoded = certText.innerText
-  // Remove first line if it contains "BEGIN" ans last line 
-  // if it contains "END":
-  encoded = encoded.replace(/-+BEGIN\s\w+-*/, '')
-    .replace(/-+END\s\w+-*/, '')
-    .replace(/\s/g, '')
-  // We need to convert the text into an ArrayBuffer:
+  try {
+    const decoded = await Crypto.decodeCertificate(certText.innerText)
+    console.log(decoded)
+  } catch (ex) {
+    showMsg(ex.toString(), true, msgCert)
+  }
   
   //certInfo.textContent = window.atob(encoded)
 })
